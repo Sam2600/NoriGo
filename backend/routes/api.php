@@ -4,14 +4,19 @@ use App\Http\Controllers\Api\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Api\Admin\BusController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\DriverController;
+use App\Http\Controllers\Api\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Api\Admin\OperationController;
+use App\Http\Controllers\Api\Admin\TripAssignmentController;
 use App\Http\Controllers\Api\Admin\TripController as AdminTripController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\DriverRoutePlanController;
 use App\Http\Controllers\Api\DriverTripController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\TripController;
+use App\Http\Controllers\Api\TripTrackingController;
 use App\Http\Controllers\Api\UserProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +48,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
 
+    Route::get('/tracking/active', [TripTrackingController::class, 'active']);
+    Route::get('/tracking/trips/{trip}', [TripTrackingController::class, 'show']);
+
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
@@ -50,6 +58,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function (): void {
     Route::get('/dashboard', DashboardController::class);
+    Route::get('/operations', [OperationController::class, 'index']);
+    Route::post('/issues/{issue}/resolve', [OperationController::class, 'resolveIssue']);
+    Route::get('/notifications', [AdminNotificationController::class, 'index']);
+    Route::post('/notifications', [AdminNotificationController::class, 'store']);
     Route::get('/roles', [RoleController::class, 'index']);
 
     Route::post('/locations', [LocationController::class, 'store']);
@@ -58,6 +70,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     Route::apiResource('buses', BusController::class);
     Route::apiResource('drivers', DriverController::class);
+    Route::post('/trips/rebalance-assignments', [TripAssignmentController::class, 'rebalance']);
+    Route::post('/trips/bus-assignments/notify', [TripAssignmentController::class, 'notifyBusAssignments']);
     Route::post('/trips/bulk', [AdminTripController::class, 'bulkStore']);
     Route::get('/trips/{trip}/bookings', [AdminTripController::class, 'bookings']);
     Route::post('/trips/{trip}/cancel', [AdminTripController::class, 'cancel']);
@@ -69,7 +83,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 Route::middleware(['auth:sanctum', 'role:driver'])->prefix('driver')->group(function (): void {
     Route::get('/trips', [DriverTripController::class, 'index']);
     Route::get('/trips/{trip}', [DriverTripController::class, 'show']);
+    Route::get('/trips/{trip}/route-plan', [DriverRoutePlanController::class, 'show']);
+    Route::post('/trips/{trip}/route-plan/optimize', [DriverRoutePlanController::class, 'optimize']);
     Route::post('/trips/{trip}/start', [DriverTripController::class, 'start']);
+    Route::post('/trips/{trip}/location', [DriverTripController::class, 'updateLocation']);
+    Route::post('/trips/{trip}/status', [DriverTripController::class, 'updateStatus']);
+    Route::post('/trips/{trip}/issues', [DriverTripController::class, 'reportIssue']);
     Route::post('/trips/{trip}/passengers/{booking}/status', [DriverTripController::class, 'updatePassengerStatus']);
     Route::post('/trips/{trip}/complete', [DriverTripController::class, 'complete']);
 });

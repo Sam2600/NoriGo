@@ -20,7 +20,7 @@ class BookingController extends Controller
         return response()->json([
             'data' => $request->user()
                 ->bookings()
-                ->with(['trip.bus', 'pickupLocation', 'dropoffLocation', 'passengerStatus'])
+                ->with(['trip.bus', 'trip.routePlan:id,trip_id,ordered_stops', 'pickupLocation', 'dropoffLocation', 'passengerStatus'])
                 ->latest()
                 ->get(),
         ]);
@@ -95,7 +95,7 @@ class BookingController extends Controller
         $this->abortUnlessOwner($request, $booking);
 
         return response()->json([
-            'data' => $booking->load(['trip.bus', 'pickupLocation', 'dropoffLocation', 'passengerStatus']),
+            'data' => $booking->load(['trip.bus', 'trip.routePlan:id,trip_id,ordered_stops', 'pickupLocation', 'dropoffLocation', 'passengerStatus']),
         ]);
     }
 
@@ -127,6 +127,25 @@ class BookingController extends Controller
         return response()->json([
             'message' => 'Booking cancelled successfully.',
             'data' => $booking->refresh(),
+        ]);
+    }
+
+    public function updatePassengerStatus(Request $request, Booking $booking): JsonResponse
+    {
+        $validated = $request->validate([
+            'passenger_status' => ['required', Rule::in(['waiting', 'picked_up', 'absent', 'dropped_off'])],
+        ]);
+
+        $booking->passengerStatus()->updateOrCreate(
+            ['trip_id' => $booking->trip_id],
+            [
+                'passenger_status' => $validated['passenger_status'],
+                'updated_by' => $request->user()->id,
+            ]
+        );
+
+        return response()->json([
+            'data' => $booking->refresh()->load('passengerStatus'),
         ]);
     }
 

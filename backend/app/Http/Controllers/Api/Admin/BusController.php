@@ -13,7 +13,9 @@ class BusController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => Bus::query()->orderBy('bus_code')->get(),
+            'data' => Bus::query()
+                ->orderBy('bus_code')
+                ->get(),
         ]);
     }
 
@@ -21,19 +23,25 @@ class BusController extends Controller
     {
         $bus = Bus::query()->create($this->validatedData($request));
 
-        return response()->json(['data' => $bus], 201);
+        return response()->json([
+            'data' => $bus,
+        ], 201);
     }
 
     public function show(Bus $bus): JsonResponse
     {
-        return response()->json(['data' => $bus]);
+        return response()->json([
+            'data' => $bus,
+        ]);
     }
 
     public function update(Request $request, Bus $bus): JsonResponse
     {
         $bus->update($this->validatedData($request, $bus));
 
-        return response()->json(['data' => $bus->refresh()]);
+        return response()->json([
+            'data' => $bus->refresh(),
+        ]);
     }
 
     public function destroy(Bus $bus): JsonResponse

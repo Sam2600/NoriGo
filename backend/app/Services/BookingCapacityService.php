@@ -6,6 +6,10 @@ use App\Models\Trip;
 
 class BookingCapacityService
 {
+    /**
+     * Find the trip in a given slot with the most room left.
+     * Returns null when the slot has no trips or all buses are full.
+     */
     public function slotBestTrip(string $date, string $time, string $direction): ?Trip
     {
         $trips = Trip::query()
@@ -18,7 +22,7 @@ class BookingCapacityService
             ->get();
 
         return $trips
-            ->filter(fn (Trip $trip) => $trip->bus && ($trip->bus->seat_count - $trip->confirmed_count) > 0)
+            ->filter(fn ($trip) => $trip->bus && ($trip->bus->seat_count - $trip->confirmed_count) > 0)
             ->sortBy('confirmed_count')
             ->first();
     }

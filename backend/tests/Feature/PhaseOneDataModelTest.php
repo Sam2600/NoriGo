@@ -27,8 +27,17 @@ class PhaseOneDataModelTest extends TestCase
         $passenger = User::factory()->create(['role_id' => $userRole->id]);
         $driver = User::factory()->create(['role_id' => $driverRole->id]);
 
-        $pickup = Location::query()->create(['name' => 'Hledan', 'latitude' => 16.8219000, 'longitude' => 96.1301000]);
-        $dropoff = Location::query()->create(['name' => 'Office', 'latitude' => 16.8500000, 'longitude' => 96.1700000]);
+        $pickup = Location::query()->create([
+            'name' => 'Hledan',
+            'address' => 'Hledan Junction',
+            'latitude' => 16.8219000,
+            'longitude' => 96.1301000,
+        ]);
+
+        $dropoff = Location::query()->create([
+            'name' => 'Office',
+            'address' => 'Main Office',
+        ]);
 
         UserProfile::query()->create([
             'user_id' => $passenger->id,
@@ -37,8 +46,16 @@ class PhaseOneDataModelTest extends TestCase
             'default_dropoff_location_id' => $dropoff->id,
         ]);
 
-        DriverProfile::query()->create(['user_id' => $driver->id, 'license_no' => 'DRV-001']);
-        $bus = Bus::query()->create(['bus_code' => 'BUS-01', 'seat_count' => 24]);
+        DriverProfile::query()->create([
+            'user_id' => $driver->id,
+            'license_no' => 'DRV-001',
+        ]);
+
+        $bus = Bus::query()->create([
+            'bus_code' => 'BUS-01',
+            'seat_count' => 24,
+        ]);
+
         $trip = Trip::query()->create([
             'trip_date' => now()->toDateString(),
             'departure_time' => '07:30:00',
@@ -46,9 +63,8 @@ class PhaseOneDataModelTest extends TestCase
             'confirmation_deadline' => now()->addHours(2),
             'bus_id' => $bus->id,
             'driver_id' => $driver->id,
-            'route_start_location_id' => $pickup->id,
-            'route_end_location_id' => $dropoff->id,
         ]);
+
         $booking = Booking::query()->create([
             'trip_id' => $trip->id,
             'user_id' => $passenger->id,

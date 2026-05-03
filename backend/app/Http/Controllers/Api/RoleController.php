@@ -11,7 +11,9 @@ class RoleController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => Role::query()->orderBy('name')->get(),
+            'data' => Role::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'display_name']),
         ]);
     }
 }

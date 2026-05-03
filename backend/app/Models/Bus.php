@@ -18,6 +18,13 @@ class Bus extends Model
         'notes',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'seat_count' => 'integer',
+        ];
+    }
+
     public function trips(): HasMany
     {
         return $this->hasMany(Trip::class);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Events\TripStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Trip;
 use App\Models\User;
@@ -20,10 +21,12 @@ class TripController extends Controller
         return response()->json([
             'data' => Trip::query()
                 ->with(['bus', 'driver.role', 'routeStartLocation', 'routeEndLocation'])
+                ->with(['latestLocation'])
                 ->withCount([
                     'bookings',
                     'bookings as confirmed_bookings_count' => fn ($query) => $query->where('status', 'confirmed'),
                     'bookings as pending_bookings_count' => fn ($query) => $query->where('status', 'pending'),
+                    'issueReports as open_issues_count' => fn ($query) => $query->where('status', 'open'),
                 ])
                 ->orderByDesc('trip_date')
                 ->orderBy('departure_time')
@@ -44,7 +47,7 @@ class TripController extends Controller
             'route_end_location_id' => ['required', 'integer', 'exists:locations,id', 'different:route_start_location_id'],
         ]);
 
-        $this->validateDriverRole($validated['driver_id']);
+        $this->validateDriverRole($validated['driver_id'] ?? null);
 
         $from = Carbon::parse($validated['date_from']);
         $to = Carbon::parse($validated['date_to']);
@@ -100,14 +103,8 @@ class TripController extends Controller
             ->values()
             ->all();
 
-        foreach ($cycles as $index => $cycle) {
-            $this->validateDriverRole($cycle['driver_id']);
-
-            if ((int) $cycle['route_start_location_id'] === (int) $cycle['route_end_location_id']) {
-                throw ValidationException::withMessages([
-                    "cycles.{$index}.route_end_location_id" => 'Route end must be different from route start.',
-                ]);
-            }
+        foreach ($cycles as $cycle) {
+            $this->validateDriverRole($cycle['driver_id'] ?? null);
         }
 
         $this->ensureNoPayloadConflicts($cycles);
@@ -133,6 +130,8 @@ class TripController extends Controller
                 'driver.role',
                 'routeStartLocation',
                 'routeEndLocation',
+                'latestLocation',
+                'issueReports' => fn ($query) => $query->latest('reported_at')->limit(10),
                 'bookings.user',
                 'bookings.pickupLocation',
                 'bookings.dropoffLocation',
@@ -145,8 +144,7 @@ class TripController extends Controller
     {
         $validated = $this->validatedData($request, partial: true);
         $this->validateDriverRole($validated['driver_id'] ?? null);
-
-        $merged = [
+        $this->ensureNoScheduleConflicts([
             ...$trip->only([
                 'trip_date',
                 'departure_time',
@@ -157,10 +155,7 @@ class TripController extends Controller
                 'route_end_location_id',
             ]),
             ...$validated,
-        ];
-
-        $tripDate = Carbon::parse($validated['trip_date'] ?? $trip->trip_date);
-        $this->ensureNoScheduleConflicts($merged, $tripDate, $tripDate, $trip);
+        ], Carbon::parse($validated['trip_date'] ?? $trip->trip_date), Carbon::parse($validated['trip_date'] ?? $trip->trip_date), $trip);
 
         $scheduleBefore = $trip->only([
             'trip_date',
@@ -171,11 +166,20 @@ class TripController extends Controller
             'route_end_location_id',
             'confirmation_deadline',
         ]);
+        $statusBefore = $trip->only(['status', 'operational_status', 'delay_minutes', 'eta_at']);
 
         $trip->update($validated);
         $trip->refresh();
 
-        if ($this->hasChanged($scheduleBefore, $trip, array_keys($scheduleBefore))) {
+        if ($this->hasChanged($scheduleBefore, $trip, [
+            'trip_date',
+            'departure_time',
+            'bus_id',
+            'driver_id',
+            'route_start_location_id',
+            'route_end_location_id',
+            'confirmation_deadline',
+        ])) {
             $notifications->sendToTripPassengers($trip->loadMissing('driver'), [
                 'created_by' => $request->user()->id,
                 'title' => 'Trip schedule changed',
@@ -183,6 +187,10 @@ class TripController extends Controller
                 'type' => 'schedule_change',
                 'priority' => 'high',
             ]);
+        }
+
+        if ($this->hasChanged($statusBefore, $trip, ['status', 'operational_status', 'delay_minutes', 'eta_at'])) {
+            event(new TripStatusUpdated($trip));
         }
 
         return response()->json([
@@ -199,25 +207,32 @@ class TripController extends Controller
     {
         $validated = $request->validate([
             'reason' => ['nullable', 'string', 'max:2000'],
+            'is_emergency' => ['sometimes', 'boolean'],
         ]);
 
-        $trip->update(['status' => 'cancelled']);
+        $isEmergency = (bool) ($validated['is_emergency'] ?? false);
 
-        $trip->bookings()
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->update([
-                'status' => 'cancelled',
-                'cancelled_by' => $request->user()->id,
-                'cancelled_at' => now(),
-            ]);
+        $trip->update([
+            'status' => 'cancelled',
+            'operational_status' => 'cancelled',
+            'is_emergency_cancelled' => $isEmergency,
+            'cancel_reason' => $validated['reason'] ?? null,
+            'cancelled_by' => $request->user()->id,
+            'cancelled_at' => now(),
+            'last_status_update_at' => now(),
+        ]);
 
         $notifications->sendToTripPassengers($trip->refresh()->loadMissing('driver'), [
             'created_by' => $request->user()->id,
-            'title' => 'Trip cancelled',
+            'title' => $isEmergency ? 'Emergency trip cancellation' : 'Trip cancelled',
             'message' => $validated['reason'] ?? 'A ferry bus trip you are assigned to has been cancelled.',
-            'type' => 'cancellation',
-            'priority' => 'high',
+            'type' => $isEmergency ? 'emergency' : 'cancellation',
+            'priority' => $isEmergency ? 'urgent' : 'high',
         ]);
+        $trip->bookings()
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->update(['status' => 'cancelled']);
+        event(new TripStatusUpdated($trip));
 
         return response()->json([
             'message' => 'Trip cancelled successfully.',
@@ -249,6 +264,10 @@ class TripController extends Controller
             'route_start_location_id' => [$required, 'integer', 'exists:locations,id'],
             'route_end_location_id' => [$required, 'integer', 'exists:locations,id', 'different:route_start_location_id'],
             'status' => ['sometimes', Rule::in(['scheduled', 'started', 'completed', 'cancelled'])],
+            'operational_status' => ['sometimes', Rule::in(['scheduled', 'on_the_way', 'delayed', 'arrived_at_pickup', 'completed', 'cancelled'])],
+            'delay_minutes' => ['nullable', 'integer', 'min:0', 'max:720'],
+            'eta_at' => ['nullable', 'date'],
+            'status_note' => ['nullable', 'string', 'max:1000'],
         ]);
     }
 
@@ -282,19 +301,33 @@ class TripController extends Controller
             ->where('status', '!=', 'cancelled')
             ->when($currentTrip, fn ($query) => $query->whereKeyNot($currentTrip->id));
 
-        $busConflict = (clone $baseQuery)->where('bus_id', $data['bus_id'])->orderBy('trip_date')->first();
+        $busConflict = (clone $baseQuery)
+            ->where('bus_id', $data['bus_id'])
+            ->orderBy('trip_date')
+            ->first();
 
         if ($busConflict) {
             throw ValidationException::withMessages([
-                'bus_id' => sprintf('Selected bus is already assigned on %s at %s.', $busConflict->trip_date, substr($departureTime, 0, 5)),
+                'bus_id' => sprintf(
+                    'Selected bus is already assigned on %s at %s.',
+                    $busConflict->trip_date,
+                    substr($departureTime, 0, 5),
+                ),
             ]);
         }
 
-        $driverConflict = (clone $baseQuery)->where('driver_id', $data['driver_id'])->orderBy('trip_date')->first();
+        $driverConflict = (clone $baseQuery)
+            ->where('driver_id', $data['driver_id'])
+            ->orderBy('trip_date')
+            ->first();
 
         if ($driverConflict) {
             throw ValidationException::withMessages([
-                'driver_id' => sprintf('Selected driver is already assigned on %s at %s.', $driverConflict->trip_date, substr($departureTime, 0, 5)),
+                'driver_id' => sprintf(
+                    'Selected driver is already assigned on %s at %s.',
+                    $driverConflict->trip_date,
+                    substr($departureTime, 0, 5),
+                ),
             ]);
         }
     }

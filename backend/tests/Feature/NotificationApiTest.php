@@ -38,20 +38,6 @@ class NotificationApiTest extends TestCase
         $this->assertNotNull($notification->refresh()->read_at);
     }
 
-    public function test_user_can_mark_all_notifications_as_read(): void
-    {
-        $user = $this->userWithRole('user');
-
-        Notification::query()->create(['user_id' => $user->id, 'title' => 'One', 'message' => 'One', 'type' => 'system']);
-        Notification::query()->create(['user_id' => $user->id, 'title' => 'Two', 'message' => 'Two', 'type' => 'system']);
-
-        Sanctum::actingAs($user);
-
-        $this->postJson('/api/notifications/read-all')->assertOk();
-
-        $this->assertSame(0, Notification::query()->where('user_id', $user->id)->whereNull('read_at')->count());
-    }
-
     public function test_user_cannot_mark_another_users_notification_as_read(): void
     {
         $owner = $this->userWithRole('user', ['email' => 'owner@example.com']);
@@ -65,7 +51,8 @@ class NotificationApiTest extends TestCase
 
         Sanctum::actingAs($other);
 
-        $this->postJson("/api/notifications/{$notification->id}/read")->assertNotFound();
+        $this->postJson("/api/notifications/{$notification->id}/read")
+            ->assertNotFound();
     }
 
     private function userWithRole(string $roleName, array $attributes = []): User

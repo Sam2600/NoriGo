@@ -16,7 +16,9 @@ class UserProfileController extends Controller
             ->with(['defaultPickupLocation', 'defaultDropoffLocation'])
             ->first();
 
-        return response()->json(['data' => $profile]);
+        return response()->json([
+            'data' => $profile,
+        ]);
     }
 
     public function update(Request $request): JsonResponse

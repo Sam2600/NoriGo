@@ -83,6 +83,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
+    public function driverIssueReports(): HasMany
+    {
+        return $this->hasMany(DriverIssueReport::class, 'driver_id');
+    }
+
     public function createdNotifications(): HasMany
     {
         return $this->hasMany(Notification::class, 'created_by');

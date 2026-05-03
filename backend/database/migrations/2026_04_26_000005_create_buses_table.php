@@ -6,20 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('driver_profiles', function (Blueprint $table): void {
+        Schema::create('buses', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
-            $table->string('license_no')->nullable()->unique();
+            $table->string('bus_code')->unique();
+            $table->string('plate_number')->nullable();
+            $table->unsignedSmallInteger('seat_count');
             $table->string('status')->default('active')->index();
             $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('driver_profiles');
+        Schema::dropIfExists('buses');
     }
 };
