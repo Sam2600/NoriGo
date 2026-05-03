@@ -1,5 +1,11 @@
 export function defaultRouteForRole(role) {
-  if (role === 'driver') return '/driver-trips'
-  if (role === 'user') return '/bookings'
+  if (role === 'driver') {
+    return '/driver-trips'
+  }
+
+  if (role === 'user') {
+    return '/bookings'
+  }
+
   return '/'
 }

@@ -1,5 +1,14 @@
 export function getApiErrorMessage(error, fallback = 'Something went wrong.') {
-  const data = error?.response?.data
-  const firstValidationMessage = data?.errors ? Object.values(data.errors).flat()[0] : null
-  return firstValidationMessage || data?.message || fallback
+  const errors = error.response?.data?.errors
+
+  if (errors) {
+    const firstKey = Object.keys(errors)[0]
+    const firstMessage = errors[firstKey]?.[0]
+
+    if (firstMessage) {
+      return firstMessage
+    }
+  }
+
+  return error.response?.data?.message || fallback
 }

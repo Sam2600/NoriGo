@@ -1,9 +1,7 @@
-function EmptyState({ title, description, action }) {
+function EmptyState({ title }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
-      <p className="text-sm font-semibold text-slate-900">{title}</p>
-      {description ? <p className="mx-auto mt-2 max-w-lg text-sm text-slate-500">{description}</p> : null}
-      {action ? <div className="mt-5">{action}</div> : null}
+    <div className="rounded-md border border-dashed border-zinc-300 bg-white px-4 py-8 text-center text-sm text-zinc-500">
+      {title}
     </div>
   )
 }

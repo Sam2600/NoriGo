@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AppLayout from './layouts/AppLayout.jsx'
+import { clearAuthSession, getStoredUser, saveAuthSession } from './features/auth/authStorage.js'
 import BookingsPage from './pages/BookingsPage.jsx'
 import BusesPage from './pages/BusesPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
@@ -9,27 +10,33 @@ import DriversPage from './pages/DriversPage.jsx'
 import LocationsPage from './pages/LocationsPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import NotificationsPage from './pages/NotificationsPage.jsx'
+import OperationsPage from './pages/OperationsPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
+import TrackingPage from './pages/TrackingPage.jsx'
 import TripsPage from './pages/TripsPage.jsx'
-import { getStoredUser } from './features/auth/authStorage.js'
 import { defaultRouteForRole } from './lib/roleRoutes.js'
 
-function RequireAuth({ currentUser, children }) {
-  if (!currentUser) return <Navigate to="/login" replace />
-  return children
-}
-
-function RequireRole({ currentUser, roles, children }) {
-  if (!roles.includes(currentUser?.role)) {
-    return <Navigate to={defaultRouteForRole(currentUser?.role)} replace />
+function HomeRoute({ user }) {
+  if (user?.role === 'admin') {
+    return <DashboardPage user={user} />
   }
 
-  return children
+  return <Navigate to={defaultRouteForRole(user?.role)} replace />
 }
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => getStoredUser())
+
+  function handleAuthenticated(session) {
+    saveAuthSession(session)
+    setCurrentUser(session.user)
+  }
+
+  function handleLogout() {
+    clearAuthSession()
+    setCurrentUser(null)
+  }
 
   return (
     <Routes>
@@ -39,7 +46,7 @@ function App() {
           currentUser ? (
             <Navigate to={defaultRouteForRole(currentUser.role)} replace />
           ) : (
-            <LoginPage onAuthenticated={setCurrentUser} />
+            <LoginPage onAuthenticated={handleAuthenticated} />
           )
         }
       />
@@ -49,76 +56,31 @@ function App() {
           currentUser ? (
             <Navigate to={defaultRouteForRole(currentUser.role)} replace />
           ) : (
-            <RegisterPage onAuthenticated={setCurrentUser} />
+            <RegisterPage onAuthenticated={handleAuthenticated} />
           )
         }
       />
       <Route
         path="/"
         element={
-          <RequireAuth currentUser={currentUser}>
-            <AppLayout currentUser={currentUser} onLogout={() => setCurrentUser(null)} />
-          </RequireAuth>
+          currentUser ? (
+            <AppLayout user={currentUser} onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
         }
       >
-        <Route
-          index
-          element={
-            <RequireRole currentUser={currentUser} roles={['admin']}>
-              <DashboardPage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="trips"
-          element={
-            <RequireRole currentUser={currentUser} roles={['admin']}>
-              <TripsPage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="bookings"
-          element={
-            <RequireRole currentUser={currentUser} roles={['admin', 'user']}>
-              <BookingsPage currentUser={currentUser} />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="driver-trips"
-          element={
-            <RequireRole currentUser={currentUser} roles={['driver']}>
-              <DriverTripsPage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="buses"
-          element={
-            <RequireRole currentUser={currentUser} roles={['admin']}>
-              <BusesPage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="drivers"
-          element={
-            <RequireRole currentUser={currentUser} roles={['admin']}>
-              <DriversPage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="locations"
-          element={
-            <RequireRole currentUser={currentUser} roles={['admin']}>
-              <LocationsPage />
-            </RequireRole>
-          }
-        />
-        <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="profile" element={<ProfilePage currentUser={currentUser} />} />
+        <Route index element={<HomeRoute user={currentUser} />} />
+        <Route path="operations" element={<OperationsPage user={currentUser} />} />
+        <Route path="tracking" element={<TrackingPage user={currentUser} />} />
+        <Route path="trips" element={<TripsPage user={currentUser} />} />
+        <Route path="bookings" element={<BookingsPage user={currentUser} />} />
+        <Route path="driver-trips" element={<DriverTripsPage user={currentUser} />} />
+        <Route path="buses" element={<BusesPage user={currentUser} />} />
+        <Route path="drivers" element={<DriversPage user={currentUser} />} />
+        <Route path="locations" element={<LocationsPage user={currentUser} />} />
+        <Route path="notifications" element={<NotificationsPage user={currentUser} />} />
+        <Route path="profile" element={<ProfilePage user={currentUser} />} />
       </Route>
       <Route
         path="*"

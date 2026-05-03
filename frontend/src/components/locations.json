@@ -1,0 +1,64 @@
+{
+   "locations": [
+      {
+         "name": "Pearl Condo",
+         "address": "Pearl Condo",
+         "latitude": 16.81732000494492,
+         "longitude": 96.15683106931587
+      },
+      {
+         "name": "Thunandar Junction",
+         "address": "Thunandar Junction",
+         "latitude": 16.90478633327054,
+         "longitude": 96.16511307611266
+      },
+      {
+         "name": "South Okkalapa Pagoda",
+         "address": "South Okkalapa Pagoda",
+         "latitude": 16.85294721179099,
+         "longitude": 96.1859021977745
+      },
+      {
+         "name": "Bahan 3rd street",
+         "address": "Bahan 3rd street",
+         "latitude": 16.79824263346192,
+         "longitude": 96.15559010956026
+      },
+      {
+         "name": "7/8 Junction",
+         "address": "7/8 Junction",
+         "latitude": 16.89148208887756, 
+         "longitude": 96.1968142374461
+      },
+      {
+         "name": "Kabar Aye Gamone Pwint",
+         "address": "Kabar Aye Gamone Pwint",
+         "latitude": 16.85625901970342,
+         "longitude": 96.15725856723283
+      },
+      {
+         "name": "Insein Park",
+         "address": "Insein Park",
+         "latitude": 16.888163442239062,
+         "longitude": 96.10817848072706
+      },
+      {
+         "name": "Hledan Center",
+         "address": "Hledan Center",
+         "latitude": 16.826362713023148,
+         "longitude": 96.13037879606757
+      },
+      {
+         "name": "8 mile Junction",
+         "address": "8 mile Junction",
+         "latitude": 16.866411432511445,
+         "longitude": 96.14249770771346
+      },
+      {
+         "name": "Sule Square",
+         "address": "Sule Square",
+         "latitude": 16.77772466819498,
+         "longitude": 96.15867039342046
+      }
+   ]
+}

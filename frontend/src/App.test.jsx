@@ -1,87 +1,49 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.jsx'
-import { clearAuthSession, saveAuthSession } from './features/auth/authStorage.js'
 
-vi.mock('./lib/api.js', () => ({
-  api: {
-    get: vi.fn((url) => {
-      if (url === '/notifications') {
-        return Promise.resolve({ data: { data: [], meta: { unread_count: 0 } } })
-      }
-      if (url === '/admin/dashboard') {
-        return Promise.resolve({
-          data: {
-            data: {
-              active_buses: 1,
-              active_drivers: 1,
-              scheduled_trips: 0,
-              pending_bookings: 0,
-              confirmed_bookings: 0,
-            },
-          },
-        })
-      }
-      if (url === '/admin/trips') {
-        return Promise.resolve({ data: { data: [] } })
-      }
-      return Promise.resolve({ data: { data: [] } })
-    }),
-    post: vi.fn(() => Promise.resolve({ data: {} })),
-    put: vi.fn(() => Promise.resolve({ data: {} })),
-    delete: vi.fn(() => Promise.resolve({ data: {} })),
-  },
-}))
+function renderApp() {
+  const queryClient = new QueryClient()
 
-function renderApp(route = '/login') {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-    },
-  })
-
-  return render(
+  render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[route]}>
+      <MemoryRouter>
         <App />
       </MemoryRouter>
     </QueryClientProvider>,
   )
 }
 
-describe('App', () => {
-  beforeEach(() => {
-    clearAuthSession()
-  })
+beforeEach(() => {
+  window.localStorage.clear()
+})
 
-  afterEach(() => {
-    clearAuthSession()
-  })
+test('renders the login screen when unauthenticated', () => {
+  renderApp()
 
-  it('renders the login page for guests', () => {
-    renderApp('/login')
+  expect(screen.getAllByText('FerryBus').length).toBeGreaterThan(0)
+  expect(screen.getByText('Welcome Back')).toBeInTheDocument()
+  expect(screen.getByText('Sign in to manage your transit ecosystem.')).toBeInTheDocument()
+})
 
-    expect(screen.getByRole('heading', { name: /sign in to ferrybus/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /register/i })).toBeInTheDocument()
-  })
+test('renders the operations workspace when authenticated', () => {
+  window.localStorage.setItem('ferry_bus_auth_token', 'test-token')
+  window.localStorage.setItem(
+    'ferry_bus_auth_user',
+    JSON.stringify({
+      id: 1,
+      name: 'System Admin',
+      email: 'admin@ferrybus.local',
+      role: 'admin',
+      status: 'active',
+    }),
+  )
 
-  it('routes an authenticated admin to the dashboard', async () => {
-    saveAuthSession({
-      token: 'test-token',
-      user: {
-        id: 1,
-        name: 'Admin User',
-        email: 'admin@example.com',
-        role: 'admin',
-        status: 'active',
-      },
-    })
+  renderApp()
 
-    renderApp('/')
-
-    expect(screen.getByRole('heading', { name: /operations dashboard/i })).toBeInTheDocument()
-    expect(await screen.findByText(/active buses/i)).toBeInTheDocument()
-  })
+  expect(screen.getByText('Ferry Operations System')).toBeInTheDocument()
+  expect(screen.getAllByText('Trips').length).toBeGreaterThan(0)
+  expect(screen.getByText('Active Buses')).toBeInTheDocument()
 })

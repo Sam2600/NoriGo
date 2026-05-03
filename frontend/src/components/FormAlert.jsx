@@ -1,15 +1,35 @@
-function FormAlert({ children, type = 'error', className = '' }) {
-  if (!children) return null
+const toneStyles = {
+  error: {
+    wrapper: 'bg-rose-50 text-rose-600 ring-rose-100',
+    dot: 'bg-rose-600',
+    role: 'alert',
+  },
+  success: {
+    wrapper: 'bg-emerald-50 text-emerald-600 ring-emerald-100',
+    dot: 'bg-emerald-600',
+    role: 'status',
+  },
+  warning: {
+    wrapper: 'bg-amber-50 text-amber-800 ring-amber-100',
+    dot: 'bg-amber-500',
+    role: 'alert',
+  },
+}
 
-  const classes = type === 'success'
-    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-    : type === 'warning'
-      ? 'border-amber-200 bg-amber-50 text-amber-700'
-      : 'border-rose-200 bg-rose-50 text-rose-700'
+function FormAlert({ children, className = '', type = 'error' }) {
+  if (!children) {
+    return null
+  }
+
+  const tone = toneStyles[type] || toneStyles.error
 
   return (
-    <div className={`rounded-lg border px-3 py-2 text-sm font-medium ${classes} ${className}`}>
-      {children}
+    <div
+      className={`flex items-start gap-2 rounded-xl px-4 py-3 text-sm font-bold ring-1 animate-in fade-in zoom-in-95 duration-200 ${tone.wrapper} ${className}`}
+      role={tone.role}
+    >
+      <span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${tone.dot}`} />
+      <span>{children}</span>
     </div>
   )
 }
