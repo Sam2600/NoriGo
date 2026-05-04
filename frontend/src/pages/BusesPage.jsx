@@ -17,7 +17,7 @@ import { getApiErrorMessage } from '../lib/apiError.js'
 
 const schema = z.object({
   bus_code: z.string().trim().min(1, 'Bus code is required.').max(30, 'Bus code must be 30 characters or less.'),
-  plate_number: z.string().trim().max(30, 'Plate number must be 30 characters or less.').optional(),
+  plate_number: z.string().trim().min(1, 'Plate number is required.').max(30, 'Plate number must be 30 characters or less.'),
   seat_count: z.coerce.number().int().min(1, 'Seat count must be at least 1.').max(80, 'Seat count must be 80 or less.'),
   status: z.enum(['active', 'inactive', 'maintenance']),
   notes: z.string().trim().max(1000, 'Technical notes must be 1000 characters or less.').optional(),

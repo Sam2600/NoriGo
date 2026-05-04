@@ -19,7 +19,7 @@ const schema = z.object({
   name: z.string().trim().min(2, 'Name is required.').max(120, 'Name must be 120 characters or less.'),
   email: z.string().email('Enter a valid email address.'),
   password: z.string().min(8, 'Password must be at least 8 characters.'),
-  license_no: z.string().trim().max(60, 'License number must be 60 characters or less.').optional(),
+  license_no: z.string().trim().min(1, 'Operator license number is required.').max(60, 'License number must be 60 characters or less.'),
   status: z.enum(['active', 'inactive']),
   notes: z.string().trim().max(1000, 'Operator notes must be 1000 characters or less.').optional(),
 })

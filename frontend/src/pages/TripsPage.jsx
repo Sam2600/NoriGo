@@ -387,7 +387,7 @@ function TripsPage({ user }) {
         <div className="mx-auto max-w-6xl animate-in fade-in slide-in-from-bottom-2 duration-500">
           <SectionPanel title="Cycle Configuration" icon={PlusIcon} description="Define operational parameters for a new transit cycle.">
             <form className="space-y-6" onSubmit={handleSubmit(generateDraftCycles)}>
-              <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] items-end">
+              <div className="grid gap-6 sm:grid-cols-2">
                 <Field label="Date From" error={errors.date_from?.message}>
                   <div className="group relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -400,9 +400,6 @@ function TripsPage({ user }) {
                     />
                   </div>
                 </Field>
-                <div className="pb-3 text-slate-400">
-                  <ArrowLongRightIcon className="h-5 w-5" />
-                </div>
                 <Field label="Date To" error={errors.date_to?.message}>
                   <div className="group relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
