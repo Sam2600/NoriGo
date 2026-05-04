@@ -1,0 +1,38 @@
+I want to build an app.
+The app is ferry bus management system.
+The app contains features like:
+   User side:
+      1. User authentication: Users can create accounts and log in to the app to access personalized features and manage their bookings.
+      2. User profile management: Users can view and update their profile information, including contact details and pickup and drop-off locations.
+      3. Future booking: Users have to send the confirmation to the app that he/she take the ferry or not for the next ferry trip, so that ferry bus can calculate the best routing plan for the upcoming transportation based on the current traffic conditions and passenger drop-off (if Office closing time) and pickup locations(if Office starting time).
+      4. Buses suggestion: Based on the user's pickup and drop-off locations, the app can suggest currently available and the most suitable ferry buses.
+      5. Available seat information: Users can check the available seats of the suggested ferry buses in real-time, so they can make informed decisions about their bookings.
+      6. Seating ticket booking: Users can book their seats for the ferry buses which are suggested by the app.
+      7. Real-time tracking: Users can track the location of the ferry buses in real-time, so they can calculate or estimate the arrival time at their location.
+      8. Notifications: Users can receive notifications about their bookings, such as booking success/fail messages, reminders for upcoming trips, and updates on any changes to the ferry buses informations.
+      9. History and feedback: Users can view their booking history with ferry duration and provide feedback on their ferry bus experiences to help improve the service.
+
+   Admin side:
+      1. Admin authentication: Admins can create accounts and log in to the app to access administrative features and manage the ferry bus operations.
+      2. Ferry bus management: Admins can add, update, and delete ferry bus informations such as bus counts, seat counts, amount of petrol to fill for each of the ferry buses.
+      3. Booking management: Admins can view and manage user bookings manually and force cancel bookings if necessary, such as in cases of emergencies or some issues.
+      4. Real-time monitoring: Admins can monitor the location and status of ferry buses in real-time to ensure smooth operations and address any issues promptly.
+      5. Tracking the cost of petrol: Admins can track the cost of petrol for each ferry bus and manage the fuel expenses effectively.
+      6. Notifications management: Admins can send notifications to users regarding booking confirmations, cancellations, schedule changes, and other important updates.
+      7. Feedback analysis: Admins can analyze user feedback to identify areas for improvement in the ferry bus service and make necessary adjustments to enhance user satisfaction.
+
+   Driver side:
+      1. Driver authentication: Drivers can create accounts and log in to the app to access features related to their ferry bus operations.
+      2. Schedule management: Drivers can view their assigned schedules and routes for ferry bus trips, allowing them to plan their work accordingly.
+      3. Reporting the cost of petrol: Drivers can report the cost of petrol for each trip, which helps admins track fuel expenses and manage the overall costs effectively.
+      4. Real-time updates: Drivers can receive real-time updates about traffic conditions, route changes, and any other relevant information that may affect their trips.
+      5. Communication with admins: Drivers can communicate with admins through the app to report any issues, request assistance, or provide updates on their trips.
+      6. Trip completion confirmation: Drivers can confirm the completion of each trip, which helps in maintaining accurate records and ensuring smooth operations.
+      7. Feedback submission: Drivers can submit feedback about their experiences, challenges, and suggestions for improving the ferry bus service, which can be valuable for admins to enhance the overall user experience.
+
+   AI side:
+      1. Route optimization: The AI can analyze traffic conditions, passenger drop-off and pickup locations, and other relevant factors to optimize the routing plan for ferry buses, ensuring efficient transportation and minimizing travel time.
+      2. Demand forecasting: The AI can analyze historical booking data and other relevant factors to forecast demand for ferry bus services, allowing admins to make informed decisions about resource allocation and scheduling.
+      3. Personalized recommendations: The AI can provide personalized recommendations to users based on their preferences, booking history, and current conditions, enhancing the user experience and increasing customer satisfaction.
+      4. Anomaly detection: The AI can monitor real-time data from ferry buses and user interactions to detect any anomalies or issues that may arise, allowing admins to address them promptly and ensure smooth operations.
+      5. Feedback analysis: The AI can analyze user feedback to identify common themes, sentiments, and areas for improvement in the ferry bus service, providing valuable insights for admins to enhance the overall user experience.

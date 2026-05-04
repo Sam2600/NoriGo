@@ -1,0 +1,78 @@
+Web Server:
+   - Nginx
+
+Frontend tech stack:
+   - React JS for the base frontend framework
+   - JavaScript only, no TypeScript
+   - Vite for frontend development and build tooling
+   - React Router for client-side routing
+   - TanStack Query / React Query for server-side data fetching, caching, and synchronization
+   - React Hook Form for form handling
+   - Zod or Yup for form validation
+   - Tailwind CSS for styling and responsive design
+   - Shared JavaScript React UI components for page headers, metric cards, panels, and app layout polish
+   - Axios for making HTTP requests to the backend API
+   - Heroicons for icons
+   - Leaflet for Phase 2 map display with OpenStreetMap tiles
+   - Laravel Echo and Pusher JS client libraries for Phase 2 real-time event listening
+   - Vitest for frontend unit testing
+   - React Testing Library for testing React components
+
+Frontend notes:
+   - Keep the frontend JavaScript only. Do not add TypeScript.
+   - Use Tailwind CSS as the main UI framework; do not add a heavier component framework unless the app needs a specific missing control.
+   - Prefer shared app components such as PageHeader, MetricCard, and SectionPanel for new screens.
+   - Keep the UI operational and professional: dense enough for dispatch work, clear enough for drivers and passengers, and not marketing-page styled.
+   - Do not use Redux Toolkit in Phase 1 unless the app really needs complex global client state.
+   - Use TanStack Query for API data such as trips, bookings, buses, drivers, and user profile data.
+   - Use simple React state or Context API for small UI state such as sidebar open/close, selected filters, or temporary form UI.
+
+Backend tech stack:
+   - Laravel for building the backend API
+   - Laravel Sanctum for SPA authentication and API authentication
+   - PostgreSQL for the database
+   - Laravel migrations for database schema management
+   - Laravel policies and middleware for role-based access control
+   - Laravel database queue driver for Phase 1 background jobs, if needed
+   - Pest or PHPUnit for backend testing
+
+Backend notes:
+   - Start Phase 1 without RabbitMQ to keep the system simpler.
+   - Start Phase 1 without Redis unless caching, session scaling, or queue performance becomes necessary.
+   - Use Laravel's built-in queue system first before adding external queue infrastructure.
+
+DevOps and deployment:
+   - Docker for containerization
+   - Docker Compose for local development
+   - Nginx as the web server / reverse proxy
+   - Environment variables for app configuration
+   - GitHub Actions or another CI/CD tool later for automated testing and deployment
+
+Phase 2 additions:
+   - Redis for cache, sessions, and faster queues
+   - Laravel Reverb for WebSocket support
+   - Laravel Echo for frontend real-time event listening
+   - Mapbox GL JS for the admin location picker map
+   - Mapbox Search JS React Geocoder for admin location search and reverse geocoding
+   - Leaflet for existing route map display
+   - Mapbox Optimization API for saved driver route plans
+   - Driver device/browser geolocation support for real-time bus tracking
+   - Polling fallback with TanStack Query so live operations still work before Reverb is enabled
+
+Phase 2 infrastructure note:
+   - Frontend Echo dependencies are installed.
+   - Backend broadcast event classes are implemented and default to the log broadcaster.
+   - Install Laravel Reverb and Predis with Composer when Packagist is reachable:
+     composer require laravel/reverb predis/predis
+
+Phase 3 additions:
+   - Reporting and analytics tools
+   - CSV or Excel export
+   - Petrol cost tracking support
+   - Feedback analysis support
+
+Phase 4 additions:
+   - AI route optimization service
+   - AI demand forecasting service
+   - AI anomaly detection
+   - RabbitMQ only if the system grows into complex asynchronous processing needs
